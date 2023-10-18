@@ -1,0 +1,44 @@
+﻿@model List<OrderDetail>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Carrello</h1>
+
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr class="table-primary">
+            <th>
+                Nome prodotto
+            </th>
+            <th>
+                ID Prodotto
+            </th>
+            <th>
+                Quantità
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var product in Model)
+        {
+            <tr>
+                <td>
+                    @product.ProductName
+                </td>
+                <td>
+                    @product.ProductId
+                </td>
+                <td>
+                    @product.Quantity
+                </td>
+                <td>
+                    <a class="btn btn-warning" asp-controller="Menu" asp-action="EditItem" asp-route-productID="@product.ProductId"><i class="bi bi-pencil"></i></a>
+                    <a class="btn btn-danger" asp-controller="Menu" asp-action="DeleteItem" asp-route-productID="@product.ProductId"><i class="bi bi-trash3"></i></a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

@@ -1,0 +1,47 @@
+﻿@model IEnumerable<SushiRestaurant.Models.User>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Elenco utenti</h1>
+
+<p>
+    <a asp-action="Create">Configura un nuovo utente</a>
+</p>
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr class="table-primary">
+            <th>
+                @Html.DisplayNameFor(model => model.Username)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Password)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Role)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Username)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Password)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Role)
+            </td>
+            <td>
+                <a class="btn btn-info" asp-action="Details" asp-route-id="@item.Id"><i class="bi bi-ticket-detailed"></i></a>
+                <a class="btn btn-warning" asp-action="Edit" asp-route-id="@item.Id"><i class="bi bi-pencil"></i></a>
+                <a class="btn btn-danger" asp-action="Delete" asp-route-id="@item.Id"><i class="bi bi-trash3"></i></a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

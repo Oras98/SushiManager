@@ -1,0 +1,21 @@
+﻿@model List<Product>
+
+@{
+    ViewData["Title"] = "Menu";
+}
+
+<h1>Index</h1>
+
+<div class="row">
+    @foreach (var product in Model)
+    {
+        <div class="card col-md-4 m-2" style="width: 18rem;">
+            <div class="card-body">
+                <h5 class="card-title">@product.Name</h5>
+                <p class="card-text">@product.Description</p>
+                <p class="font-italic" style="margin-bottom: 35px;">@product.Ingredients</p>
+                <a asp-action="AddItem" asp-route-productId="@product.Id" class="btn btn-primary" style="position:absolute; bottom: 5px;">Add to Cart</a>
+            </div>
+        </div>
+    }
+</div>
