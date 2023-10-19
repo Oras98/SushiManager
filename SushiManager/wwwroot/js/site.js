@@ -10,7 +10,7 @@ function logout()
     if (confirmLogout)
     {
         $.ajax({
-            url: "/UserLogin/Logout",
+            url: "/UserAuthentication/Logout",
             type: "POST",
             success: function (result)
             {
