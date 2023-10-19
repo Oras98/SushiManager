@@ -10,16 +10,17 @@ using System.Text;
 
 namespace SushiRestaurant.Controllers
 {
-    public class UserLoginController : Controller
+    public class UserAuthenticationController : Controller
     {
         ApplicationDbContext _dbContext;
         IConfiguration _config;
-        public UserLoginController(ApplicationDbContext dbContext, IConfiguration config)
+        public UserAuthenticationController(ApplicationDbContext dbContext, IConfiguration config)
         {                
             _dbContext = dbContext;
             _config = config;
         }
-        
+
+        [AllowAnonymous]
         public IActionResult Login(string? ReturnUrl)
         {            
             if (ReturnUrl is not null)
@@ -41,7 +42,7 @@ namespace SushiRestaurant.Controllers
             {
                 var user = authenticate(userLogin);
                 var generated_token = generate(user);
-                addTokenToCookies(generated_token);
+                addTokenToCookies(generated_token);                
 
                 TempData["AlertMessage"] = "Login effettuato!";
 
@@ -105,6 +106,19 @@ namespace SushiRestaurant.Controllers
                 SameSite = SameSiteMode.Strict,
                 Expires = DateTime.Now.AddMinutes(Convert.ToDouble(_config["Jwt:MinutesBeforeExpires"]))
             });
+        }
+
+        [HttpPost]
+        [Authorize]
+        public IActionResult Logout()
+        {
+            removeTokenFromCookies();
+            return RedirectToAction("Index", "Home");
+        }
+
+        void removeTokenFromCookies()
+        {
+            Response.Cookies.Delete("token");
         }
     }
 }

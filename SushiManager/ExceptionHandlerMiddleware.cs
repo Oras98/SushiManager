@@ -22,7 +22,7 @@ namespace SushiRestaurant
             if (context.Response.StatusCode == 401)
             {                
                 // Redirect to the Unauthorized page                                
-                context.Response.Redirect($"/UserLogin/Login?ReturnUrl={current_url}");
+                context.Response.Redirect($"/UserAuthentication/Login?ReturnUrl={current_url}");
                 return;
             }
             else if (context.Response.StatusCode == 403)
