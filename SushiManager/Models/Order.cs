@@ -1,6 +1,4 @@
-﻿using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace SushiRestaurant.Models
 {
@@ -10,15 +8,9 @@ namespace SushiRestaurant.Models
         public int Id { get; set; }
 
         [Required]
-        [ForeignKey("User")]        
-        public int UserId { get; set; }
+        public int TableNumber { get; set; }
 
         [Required]
         public List<OrderDetail> Details { get; set; }
-
-        [Required]
-        public DateTime CreatedDate { get; set; }
-        public DateTime UpdatedDate { get; set; }
-        public DateTime SubmitDate { get; set; }
     }
 }
