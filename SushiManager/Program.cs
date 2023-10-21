@@ -1,9 +1,10 @@
-using SushiRestaurant.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using SushiRestaurant;
+using SushiManager.Factories.OrderRetrieverFactory;
+using SushiManager.Middlewares;
+using SushiManager.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -43,7 +44,8 @@ void addServices()
     builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseMySQL(
         builder.Configuration.GetConnectionString("DefaultConnection")
         ));
-    builder.Services.AddScoped<SushiRestaurant.Data.Utility>();
+    builder.Services.AddScoped<SushiManager.Services.Utility>();
+    builder.Services.AddScoped<OrderRetrieverFactory>();
     
     builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         .AddJwtBearer(options =>

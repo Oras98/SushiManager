@@ -2,7 +2,7 @@
 using Newtonsoft.Json;
 using NuGet.Protocol.Plugins;
 
-namespace SushiRestaurant
+namespace SushiManager.Middlewares
 {
     public class ExceptionHandlerMiddleware
     {
@@ -20,7 +20,7 @@ namespace SushiRestaurant
             var current_url = context.Request.Path + context.Request.QueryString;
 
             if (context.Response.StatusCode == 401)
-            {                
+            {
                 // Redirect to the Unauthorized page                                
                 context.Response.Redirect($"/UserAuthentication/Login?ReturnUrl={current_url}");
                 return;
@@ -32,7 +32,7 @@ namespace SushiRestaurant
                 context.Response.Redirect($"/Home/Index?message={error_message}");
 
                 return;
-            }            
+            }
         }
     }
 }

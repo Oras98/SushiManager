@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
-using SushiRestaurant.Data;
+using SushiManager.Services;
 using SushiRestaurant.Exceptions;
 using SushiRestaurant.Models;
 using System.IdentityModel.Tokens.Jwt;

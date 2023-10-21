@@ -1,11 +1,12 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.CodeAnalysis;
-using SushiRestaurant.Data;
 using SushiRestaurant.Models;
-using Newtonsoft.Json;
-using System.Text.Json;
-using System.Web;
+using Microsoft.EntityFrameworkCore;
+using SushiManager.Factories.OrderRetrieverFactory;
+using SushiManager.Exceptions;
+using SushiManager.Data;
+using SushiManager.Services;
 
 namespace SushiRestaurant.Controllers
 {
@@ -14,10 +15,12 @@ namespace SushiRestaurant.Controllers
     {
         ApplicationDbContext _dbContext;
         Utility _utility;
-        public MenuController(ApplicationDbContext dbContext, Utility utility)
+        OrderRetrieverFactory _orderRetrieverFactory;
+        public MenuController(ApplicationDbContext dbContext, Utility utility, OrderRetrieverFactory orderRetrieverFactory)
         {
             _dbContext = dbContext;
             _utility = utility;
+            _orderRetrieverFactory = orderRetrieverFactory;
         }
 
         public IActionResult Index()
@@ -37,70 +40,114 @@ namespace SushiRestaurant.Controllers
         [HttpPost]        
         public IActionResult AddItem(OrderDetail orderDetail)
         {
-            orderDetail.ProductName = _utility.getProductName(orderDetail.ProductId);
+            var user = _utility.GetSessionUser(User);
 
-            var products = new List<OrderDetail>() { orderDetail };
-            var raw_producsts = Request.Cookies["cartProducts"];
-            
-            if (raw_producsts != null)
-            {
-                products = JsonConvert.DeserializeObject<List<OrderDetail>>(raw_producsts);
+            var orderRetriever = _orderRetrieverFactory.GetOrderRetriever(user.Id);
+            var order = orderRetriever.GetOrder();
 
-                var same_product = products.Find(x => x.ProductId == orderDetail.ProductId);
-
-                if (same_product != null)
-                    same_product.Quantity += orderDetail.Quantity;
-                else
-                    products.Add(orderDetail);                
-            }
-            
-            Response.Cookies.Append("cartProducts", JsonConvert.SerializeObject(products));
+            var order_manager = new OrderManager(_dbContext, order);
+            order_manager.AddOrderItem(orderDetail);
 
             return RedirectToAction("Index");
         }
 
-        public IActionResult EditItem(int productID)
+        public IActionResult EditItem(int order_detail_id)
         {
-            var raw_producsts = Request.Cookies["cartProducts"];
-            var products = JsonConvert.DeserializeObject<List<OrderDetail>>(raw_producsts);
-            var product_to_edit = products.Find(product => product.ProductId == productID);
+            if (_dbContext.OrderDetails == null)            
+                return NotFound();            
 
-            return View(product_to_edit);
+            var order_detail = _dbContext.OrderDetails.Find(order_detail_id);
+
+            if (order_detail == null)            
+                return NotFound();           
+
+            return View(order_detail);
         }
 
         [HttpPost]
         public IActionResult EditItem(OrderDetail orderDetail)
         {
-            var raw_producsts = Request.Cookies["cartProducts"];
-            var products = JsonConvert.DeserializeObject<List<OrderDetail>>(raw_producsts);
-            var product_to_edit_index = products.FindIndex(product => product.ProductId == orderDetail.ProductId);
+            try
+            {
+                var orderRetriever = _orderRetrieverFactory.GetOrderRetriever(orderDetail);
+                var order = orderRetriever.GetOrder();
 
-            products[product_to_edit_index].Quantity = orderDetail.Quantity;
-
-            Response.Cookies.Append("cartProducts", JsonConvert.SerializeObject(products));
+                var order_manager = new OrderManager(_dbContext, order);
+                order_manager.EditOrderItem(orderDetail);
+            }
+            catch (OrderDeletedException)
+            {
+                return NotFound();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!OrderDetailNotFound(orderDetail.Id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
 
             return RedirectToAction("Index", "Cart");
         }
 
-        public IActionResult DeleteItem(int productID)
+        private bool OrderDetailNotFound(int id)
         {
-            var raw_producsts = Request.Cookies["cartProducts"];
-            var products = JsonConvert.DeserializeObject<List<OrderDetail>>(raw_producsts);
-            var product_to_delete = products.Find(product => product.ProductId == productID);
+            return (_dbContext.OrderDetails?.Any(e => e.Id == id)).GetValueOrDefault();
+        }
 
-            return View(product_to_delete);
+        public IActionResult DeleteItem(int order_detail_id)
+        {
+            if (_dbContext.OrderDetails is null)
+                return NotFound();
+
+            var order_detail = _dbContext.OrderDetails.Find(order_detail_id);
+
+            if (order_detail is null)
+                return NotFound();
+
+            return View(order_detail);
+        }
+
+        [HttpPost, ActionName("DeleteItem")]
+        public IActionResult DeleteItemConfirmed(int order_detail_id)
+        {
+            try
+            {
+                var user = _utility.GetSessionUser(User);
+
+                var orderRetriever = _orderRetrieverFactory.GetOrderRetriever(user.Id);
+                var order = orderRetriever.GetOrder();
+
+                var order_manager = new OrderManager(_dbContext, order);
+                order_manager.DeleteOrderItem(order_detail_id);
+
+                return RedirectToAction("Index", "Cart");
+            }
+            catch (Exception err)
+            {
+                return Problem(err.Message);
+            }
         }
 
         [HttpPost]
-        public IActionResult DeleteItem(OrderDetail orderDetail)
+        public IActionResult SubmitOrder(int orderID)
         {
-            var raw_producsts = Request.Cookies["cartProducts"];
-            var products = JsonConvert.DeserializeObject<List<OrderDetail>>(raw_producsts);
-            products = products.Where(product => product.ProductId != orderDetail.ProductId).ToList();
+            try
+            {
+                var order = _dbContext.Orders.Find(orderID);
+                var order_manager = new OrderManager(_dbContext, order);
+                order_manager.SubmitOrder();
 
-            Response.Cookies.Append("cartProducts", JsonConvert.SerializeObject(products));
-
-            return RedirectToAction("Index", "Cart");
+                return RedirectToAction("Index", "Menu");
+            }
+            catch (OrderDeletedException)
+            {
+                return NotFound();
+            }
         }
     }
 }
