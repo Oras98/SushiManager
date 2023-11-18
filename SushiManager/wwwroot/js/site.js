@@ -27,3 +27,15 @@ function logout()
         });
     }
 }
+
+function HideModal()
+{
+    $("#appModal").modal("hide");
+}
+
+function LoadAndShowModal(title, body)
+{    
+    $("#appModal").modal("show");
+    $("#appModalTitle").html(title);
+    $("#appModal .modal-body").html(body);
+}

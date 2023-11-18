@@ -1,0 +1,25 @@
+﻿@model OrderDetail[]
+
+@{
+    ViewData["Title"] = "Dettagli ordine";
+}
+
+@if (Model is null || Model.Length == 0)
+{
+    <h3>L'ordine non contiente elementi</h3>
+}
+else
+{
+    <div class="row">
+        @foreach (var order_detail in Model)
+        {
+            <div class="card text-white bg-info mb-3 mx-auto" style="width: 18rem;">
+                <div class="card-body">
+                    <h3 class="card-title"><b>Tavolo: </b> @order_detail.Order.User.Username</h3>
+                    <h5>@order_detail.Product.Name</h5>
+                    <p class="card-text"><b>Quantità: </b> @order_detail.Quantity</p>
+                </div>
+            </div>
+        }
+    </div>
+}

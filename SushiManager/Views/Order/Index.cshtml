@@ -1,0 +1,71 @@
+﻿@model Order[]
+
+@{
+    ViewData["Title"] = "Ordini ricevuti";
+}
+
+<h1>Ordini ricevuti</h1>
+
+@if (Model is null || Model.Length == 0)
+{
+    <h3>Nessun ordine ricevuto</h3>
+    <a asp-controller="Home" asp-action="Index">Torna alla homepage</a>
+}
+else
+{
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr class="table-primary">
+                <th>
+                    Data creazione
+                </th>
+                <th>
+                    Data invio
+                </th>
+                <th>
+                    Utente
+                </th>                
+            </tr>
+        </thead>
+        <tbody>
+
+            @foreach (var order in Model)
+            {
+                <tr>
+                    <td>
+                        @order.CreateDate
+                    </td>
+                    <td class="fw-bold">
+                        @order.SubmitDate
+
+                        <button value="@order.Id" class="btn btn-info" onclick="ShowModal(this.value)">
+                            <i class="bi bi-info-circle"></i>
+                        </button>
+                    </td>
+                    <td>
+                        @order.User.Username
+                    </td>
+                </tr>
+            }
+
+        </tbody>
+    </table>
+}
+
+<script>
+    function ShowModal(orderID)
+    {        
+        $.ajax({
+            url: `/Order/Details?orderID=${orderID}`,
+            type: "GET",
+            success: function (result)
+            {                
+                LoadAndShowModal("Info ordine", result);
+            },
+            error: function (xhr, status, error)
+            {
+                alert("Errore durante il caricamento dei dettagli dell'ordine!")                
+            }
+        });        
+    }
+</script>
